@@ -14,4 +14,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 EXPOSE 8080
 
 # Run app.py when the container launches
-CMD ["python3", "app.py", "0.0.0.0:8080"]
+CMD ["python3", "app.py", "https://localhost:8080"]
