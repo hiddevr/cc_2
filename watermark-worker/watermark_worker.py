@@ -42,9 +42,10 @@ def process_frame(data):
         # Save image to BytesIO object
         byte_arr = io.BytesIO()
         frame.save(byte_arr, format='PNG')
+        byte_arr.seek(0) # reset the pointer to the start of BytesIO object
 
         # Upload BytesIO object to GCS
-        output_blob.upload_from_string(byte_arr.getvalue(), content_type='image/png')
+        output_blob.upload_from_file(byte_arr, content_type='image/png')
 
         # Update the 'processed' value in Firestore jobs collection
         doc_ref = db.collection('jobs').document(video_id)
