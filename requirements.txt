@@ -4,4 +4,4 @@ opencv-python-headless
 requests
 numpy
 gunicorn
-pip install google-cloud-firestore
+google-cloud-firestore
