@@ -52,7 +52,7 @@ def upload_files():
         storage_client = storage.Client()
 
         # Upload video file to Google Cloud Storage
-        bucket = storage_client.get_bucket('raw-vid-storage')
+        bucket = storage_client.get_bucket('full-vid-storage')
         blob = bucket.blob(f'{user_id}/video.mp4')
         with open(video_filename, 'rb') as vid_file:
             blob.upload_from_file(vid_file)
