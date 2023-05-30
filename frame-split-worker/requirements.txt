@@ -1,0 +1,8 @@
+flask
+google-cloud-storage
+opencv-python-headless
+requests
+numpy
+gunicorn
+google-cloud-firestore
+google-cloud-pubsub
