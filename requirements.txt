@@ -5,3 +5,4 @@ requests
 numpy
 gunicorn
 google-cloud-firestore
+google-cloud

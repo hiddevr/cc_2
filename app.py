@@ -1,12 +1,13 @@
 from flask import Flask, request, render_template
 from google.cloud import storage
-import cv2
 import requests
-import numpy as np
 import uuid
 import os
 import tempfile
 from google.cloud import firestore
+from google.cloud import pubsub_v1
+import json
+
 
 app = Flask(__name__)
 
@@ -33,10 +34,9 @@ def process_file_or_url(file_obj, url):
 @app.route('/upload', methods=['GET', 'POST'])
 def upload_files():
     if request.method == 'GET':
-        # Serve the HTML frontend
         return render_template('upload.html')
     elif request.method == 'POST':
-        user_id = uuid.uuid4()
+        user_id = str(uuid.uuid4()) # convert UUID to string
 
         # Process the video file
         video_file = request.files.get('video-file')
@@ -48,40 +48,36 @@ def upload_files():
         image_url = request.form.get('image-url')
         image_filename = process_file_or_url(image_file, image_url)
 
-        # Open video file with OpenCV
-        vidcap = cv2.VideoCapture(video_filename)
-        success, image_frame = vidcap.read()
-        frames = []
-        while success:
-            frames.append(image_frame)
-            success, image_frame = vidcap.read()
-        vidcap.release()
-
         # Instantiate the storage client
         storage_client = storage.Client()
-        db = firestore.Client()
+
+        # Upload video file to Google Cloud Storage
+        bucket = storage_client.get_bucket('raw-vid-storage')
+        blob = bucket.blob(f'{user_id}/video.mp4')
+        with open(video_filename, 'rb') as vid_file:
+            blob.upload_from_file(vid_file)
 
         # Upload watermark image to Google Cloud Storage
-        bucket = storage_client.get_bucket('worker-data-store')
         blob = bucket.blob(f'{user_id}/watermark.png')
         with open(image_filename, 'rb') as img_file:
             blob.upload_from_file(img_file)
 
-        # Then upload each frame to Google Cloud Storage
-        for i, frame in enumerate(frames):
-            _, encoded_image = cv2.imencode('.png', frame)
-            blob = bucket.blob(f'{user_id}/frame{i}.png')
-            blob.upload_from_string(encoded_image.tostring(), content_type='image/png')
-
+        # Clean up temporary files
         os.remove(video_filename)
         os.remove(image_filename)
 
-        doc_ref = db.collection(u'jobs').document(user_id)
-        doc_ref.set({
-            'frames': len(frames),
-            'processed': 0,
-            'completed': False
-        })
+        publisher = pubsub_v1.PublisherClient()
+        topic_path = publisher.topic_path('cc-assigment2-388310', 'split-video')
+
+        # Publish a message to the Pub/Sub topic
+        message = {
+            'video_id': user_id,
+        }
+        message_data = json.dumps(message).encode('utf-8')
+        future = publisher.publish(topic_path, data=message_data)
+
+        # Non-blocking. Allow the publish() method to complete in the background.
+        future.result()
 
         return 'Done'
 
