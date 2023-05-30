@@ -85,7 +85,7 @@ def index():
     # Clean up temporary files
     os.remove(video_path)
 
-    return 'Message processed', 200
+    return 'OK', 200
 
 
 if __name__ == "__main__":
