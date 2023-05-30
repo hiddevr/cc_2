@@ -12,7 +12,7 @@ import base64
 frame_splitter = Flask(__name__)
 
 
-@app.route('/', methods=['POST'])
+@frame_splitter.route('/', methods=['POST'])
 def index():
     # Extract the Pub/Sub message from the request body
     envelope = request.get_json()
