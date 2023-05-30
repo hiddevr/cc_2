@@ -1,3 +1,5 @@
+import base64
+import json
 import os
 from flask import Flask, request
 from google.cloud import storage, pubsub_v1, firestore
@@ -52,8 +54,22 @@ def process_frame(data):
 @app.route('/', methods=['POST'])
 def index():
     # Parse Pub/Sub message
-    message = request.get_json(force=True)
-    data = message['message']['attributes']
+    envelope = request.get_json()
+    if not envelope:
+        msg = 'no Pub/Sub message received'
+        print(f'Error: {msg}')
+        return f'Error: {msg}', 400
+
+    if 'message' not in envelope:
+        msg = 'invalid Pub/Sub message format'
+        print(f'Error: {msg}')
+        return f'Error: {msg}', 400
+
+    pubsub_message = envelope['message']
+
+    # Decode the Pub/Sub message
+    data = base64.b64decode(pubsub_message.get('data')).decode('utf-8')
+    data = json.loads(data)
 
     process_frame(data)
 
