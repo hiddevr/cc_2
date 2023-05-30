@@ -6,6 +6,8 @@ from google.cloud import storage, pubsub_v1, firestore
 import cv2
 import numpy as np
 from PIL import Image
+import io
+
 
 app = Flask(__name__)
 
@@ -23,11 +25,11 @@ def process_frame(data):
     # Fetch the watermark.png and specific frame
     watermark_bucket = storage_client.get_bucket('full-vid-storage')
     watermark_blob = watermark_bucket.blob(f'{video_id}/watermark.png')
-    watermark = Image.open(watermark_blob.download_as_bytes())
+    watermark = Image.open(io.BytesIO(watermark_blob.download_as_bytes()))
 
     frame_bucket = storage_client.get_bucket('worker-data-storage')
     frame_blob = frame_bucket.blob(f'{video_id}/frame{frame_number}.png')
-    frame = Image.open(frame_blob.download_as_bytes())
+    frame = Image.open(io.BytesIO(frame_blob.download_as_bytes()))
 
     # Check if the frame is already processed
     processed_frames_bucket = storage_client.get_bucket('processed-frames')
