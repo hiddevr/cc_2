@@ -77,7 +77,7 @@ def index():
 
     # Publish a message to a topic for each frame
     publisher = pubsub_v1.PublisherClient()
-    topic_path = publisher.topic_path(os.getenv('GOOGLE_CLOUD_PROJECT'), 'frame-processing')
+    topic_path = publisher.topic_path('cc-assigment2-388310', 'frame-processing')
     for i in range(len(frames)):
         message = json.dumps({'video_id': video_id, 'frame_number': i}).encode('utf-8')
         publisher.publish(topic_path, data=message)
