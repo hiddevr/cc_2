@@ -6,6 +6,7 @@ import numpy as np
 import uuid
 import os
 import tempfile
+from google.cloud import firestore
 
 app = Flask(__name__)
 
@@ -58,6 +59,7 @@ def upload_files():
 
         # Instantiate the storage client
         storage_client = storage.Client()
+        db = firestore.Client()
 
         # Upload watermark image to Google Cloud Storage
         bucket = storage_client.get_bucket('worker-data-store')
@@ -73,7 +75,16 @@ def upload_files():
 
         os.remove(video_filename)
         os.remove(image_filename)
+
+        doc_ref = db.collection(u'jobs').document(user_id)
+        doc_ref.set({
+            'frames': len(frames),
+            'processed': 0,
+            'completed': False
+        })
+
         return 'Done'
+
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
