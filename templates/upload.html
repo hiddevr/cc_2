@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<h2>Upload Video and Watermark Image</h2>
+
+<form id="upload-form">
+    <label for="video">Select video:</label>
+    <input type="file" id="video-file" name="video-file" accept="video/*"><br><br>
+    <label for="video-url">Or enter video URL:</label>
+    <input type="text" id="video-url" name="video-url"><br><br>
+    <label for="image">Select watermark image:</label>
+    <input type="file" id="image-file" name="image-file" accept="image/*"><br><br>
+    <label for="image-url">Or enter image URL:</label>
+    <input type="text" id="image-url" name="image-url"><br><br>
+    <input type="button" value="Upload" onclick="uploadFiles()">
+</form>
+
+<script>
+    function uploadFiles() {
+        var videoFile = document.getElementById('video-file').files[0];
+        var videoUrl = document.getElementById('video-url').value;
+        var imageFile = document.getElementById('image-file').files[0];
+        var imageUrl = document.getElementById('image-url').value;
+
+        var formData = new FormData();
+        formData.append('video-file', videoFile);
+        formData.append('video-url', videoUrl);
+        formData.append('image-file', imageFile);
+        formData.append('image-url', imageUrl);
+
+        fetch('/upload', {
+            method: 'POST',
+            body: formData
+        }).then(response => {
+            console.log('Success:', response);
+        }).catch((error) => {
+            console.error('Error:', error);
+        });
+    }
+</script>
+
+</body>
+</html>
