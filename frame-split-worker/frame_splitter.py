@@ -9,10 +9,10 @@ import tempfile
 import json
 import base64
 
-frame_splitter = Flask(__name__)
+app = Flask(__name__)
 
 
-@frame_splitter.route('/', methods=['POST'])
+@app.route('/', methods=['POST'])
 def index():
     # Extract the Pub/Sub message from the request body
     envelope = request.get_json()
@@ -89,4 +89,4 @@ def index():
 
 
 if __name__ == "__main__":
-    frame_splitter.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
