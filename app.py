@@ -56,8 +56,10 @@ def upload_files():
             success, image_frame = vidcap.read()
         vidcap.release()
 
+        # Instantiate the storage client
+        storage_client = storage.Client()
+
         # Upload watermark image to Google Cloud Storage
-        storage_client = storage.Client.from_service_account_json('cc-assigment2-388310-9c5a6c31333e.json')
         bucket = storage_client.get_bucket('worker-data-store')
         blob = bucket.blob(f'{user_id}/watermark.png')
         with open(image_filename, 'rb') as img_file:
