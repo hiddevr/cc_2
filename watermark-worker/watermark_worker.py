@@ -32,14 +32,19 @@ def process_frame(data):
     frame = Image.open(io.BytesIO(frame_blob.download_as_bytes()))
 
     # Check if the frame is already processed
-    processed_frames_bucket = storage_client.get_bucket('processed-frames')
-    if not processed_frames_bucket.blob(f'{video_id}/frame{frame_number}.png').exists():
-        # Add the watermark to the video frame
+    output_bucket = storage_client.get_bucket('processed-frames')
+    output_blob = output_bucket.blob(f'{video_id}/frame{frame_number}.png')
+
+    if not output_blob.exists():
+        # Add watermark to frame
         frame.paste(watermark, (0, 0), watermark)
 
-        # Upload it to the processed-frames bucket
-        output_blob = processed_frames_bucket.blob(f'{video_id}/frame{frame_number}.png')
-        frame.save(output_blob, 'PNG')
+        # Save image to BytesIO object
+        byte_arr = io.BytesIO()
+        frame.save(byte_arr, format='PNG')
+
+        # Upload BytesIO object to GCS
+        output_blob.upload_from_string(byte_arr.getvalue(), content_type='image/png')
 
         # Update the 'processed' value in Firestore jobs collection
         doc_ref = db.collection('jobs').document(video_id)
