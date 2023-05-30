@@ -74,3 +74,6 @@ def upload_files():
         os.remove(video_filename)
         os.remove(image_filename)
         return 'Done'
+
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
