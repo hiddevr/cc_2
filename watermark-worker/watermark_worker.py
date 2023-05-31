@@ -18,7 +18,7 @@ storage_client = storage.Client()
 db = firestore.Client()
 
 
-def process_frame(data):
+def process_frame(transaction, data):
     video_id = data['video_id']
     frame_number = data['frame_number']
 
@@ -49,15 +49,14 @@ def process_frame(data):
 
         # Update the 'processed' value in Firestore jobs collection
         doc_ref = db.collection('jobs').document(video_id)
-        job = doc_ref.get().to_dict()
+        job = transaction.get(doc_ref).to_dict()
         job['processed'] += 1
-        doc_ref.set(job)
+        transaction.set(doc_ref, job)
 
         # If all frames are processed, publish a message to the 'reduce-video' topic
         if job['processed'] == job['frames']:
             topic_path = publisher.topic_path(PROJECT_ID, 'reduce-video')
             publisher.publish(topic_path, video_id.encode('utf-8'))
-
 
 @app.route('/', methods=['POST'])
 def index():
@@ -79,7 +78,8 @@ def index():
     data = base64.b64decode(pubsub_message.get('data')).decode('utf-8')
     data = json.loads(data)
 
-    process_frame(data)
+    # Run a Firestore transaction
+    db.run_transaction(process_frame, data)
 
     return 'OK', 200
 
