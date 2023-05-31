@@ -18,7 +18,34 @@ storage_client = storage.Client()
 db = firestore.Client()
 
 
-def process_frame(transaction, data):
+def process_frame(transaction, doc_ref):
+    job = transaction.get(doc_ref).to_dict()
+    job['processed'] += 1
+    transaction.set(doc_ref, job)
+
+    return job
+
+
+@app.route('/', methods=['POST'])
+def index():
+    # Parse Pub/Sub message
+    envelope = request.get_json()
+    if not envelope:
+        msg = 'no Pub/Sub message received'
+        print(f'Error: {msg}')
+        return f'Error: {msg}', 400
+
+    if 'message' not in envelope:
+        msg = 'invalid Pub/Sub message format'
+        print(f'Error: {msg}')
+        return f'Error: {msg}', 400
+
+    pubsub_message = envelope['message']
+
+    # Decode the Pub/Sub message
+    data = base64.b64decode(pubsub_message.get('data')).decode('utf-8')
+    data = json.loads(data)
+
     video_id = data['video_id']
     frame_number = data['frame_number']
 
@@ -47,39 +74,14 @@ def process_frame(transaction, data):
         # Upload BytesIO object to GCS
         output_blob.upload_from_file(byte_arr, content_type='image/png')
 
-        # Update the 'processed' value in Firestore jobs collection
+        # Start the Firestore transaction
         doc_ref = db.collection('jobs').document(video_id)
-        job = transaction.get(doc_ref).to_dict()
-        job['processed'] += 1
-        transaction.set(doc_ref, job)
+        job = db.run_transaction(process_frame, doc_ref)
 
         # If all frames are processed, publish a message to the 'reduce-video' topic
         if job['processed'] == job['frames']:
             topic_path = publisher.topic_path(PROJECT_ID, 'reduce-video')
             publisher.publish(topic_path, video_id.encode('utf-8'))
-
-@app.route('/', methods=['POST'])
-def index():
-    # Parse Pub/Sub message
-    envelope = request.get_json()
-    if not envelope:
-        msg = 'no Pub/Sub message received'
-        print(f'Error: {msg}')
-        return f'Error: {msg}', 400
-
-    if 'message' not in envelope:
-        msg = 'invalid Pub/Sub message format'
-        print(f'Error: {msg}')
-        return f'Error: {msg}', 400
-
-    pubsub_message = envelope['message']
-
-    # Decode the Pub/Sub message
-    data = base64.b64decode(pubsub_message.get('data')).decode('utf-8')
-    data = json.loads(data)
-
-    # Run a Firestore transaction
-    db.run_transaction(process_frame, data)
 
     return 'OK', 200
 
