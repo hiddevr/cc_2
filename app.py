@@ -87,12 +87,11 @@ def check_progress():
     if request.method == 'GET':
         return render_template('progress.html')
     elif request.method == 'POST':
-        video_id = str(request.form.get('video-id'))
+        data = request.get_json()  # Use get_json() instead of request.form.get()
+        video_id = str(data.get('video-id'))  # Get the video_id from the parsed JSON
         doc_ref = db.collection('jobs').document(video_id)
 
         doc = doc_ref.get()
-        return video_id
-        """
         if doc.exists:
             data = doc.to_dict()
             processed = data.get('processed')
@@ -110,7 +109,6 @@ def check_progress():
                 return f'{percent_processed}% processed.'
         else:
             return 'Video ID not found.', 404
-        """
 
 
 if __name__ == "__main__":
