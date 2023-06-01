@@ -7,6 +7,7 @@ import tempfile
 from google.cloud import firestore
 from google.cloud import pubsub_v1
 import json
+import datetime
 
 
 app = Flask(__name__)
@@ -103,8 +104,17 @@ def check_progress():
 
             # If all frames are processed, provide a download link to the completed video
             if data.get('completed'):
-                link = f'https://storage.googleapis.com/completed-videos/{video_id}.mp4'
-                return f'{percent_processed}% processed. <a href="{link}">Download video</a>'
+                storage_client = storage.Client()
+                bucket = storage_client.bucket('completed-videos')
+                blob = bucket.blob(f'{video_id}.mp4')
+                url = blob.generate_signed_url(
+                    version="v4",
+                    # This URL is valid for 15 minutes
+                    expiration=datetime.timedelta(minutes=15),
+                    # Allow GET requests using this URL.
+                    method="GET")
+
+                return f'{percent_processed}% processed. <a href="{url}">Download video</a>'
             else:
                 return f'{percent_processed}% processed.'
         else:

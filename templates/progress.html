@@ -23,7 +23,7 @@
                 body: JSON.stringify({'video-id': videoId})
             }).then(response => response.text()) // convert response to text
               .then((responseText) => {
-                document.getElementById('progress-result').innerText = responseText; // display the response
+                document.getElementById('progress-result').innerHTML = responseText; // display the response
             }).catch((error) => {
                 console.error('Error:', error);
             });
