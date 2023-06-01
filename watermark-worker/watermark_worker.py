@@ -24,14 +24,7 @@ def process_frame(transaction, doc_ref, frame_number):
         f'processed.{frame_number}': True
     })
 
-    processed_dict = doc_ref.get().to_dict().get('processed')
-    if all(processed_dict.values()):
-        transaction.update(doc_ref, {
-            'completed': True
-        })
-        return True
-    else:
-        return False
+    return
 
 
 @app.route('/', methods=['POST'])
@@ -85,7 +78,16 @@ def index():
         # Update Firestore
         doc_ref = db.collection('jobs').document(video_id)
         transaction = db.transaction()
-        finished = process_frame(transaction, doc_ref, frame_number)
+        process_frame(transaction, doc_ref, frame_number)
+
+        processed_dict = doc_ref.get().to_dict().get('processed')
+        if all(processed_dict.values()):
+            transaction.update(doc_ref, {
+                'completed': True
+            })
+            finished = True
+        else:
+            finished = False
 
         # If all frames are processed, publish a message to the 'reduce-video' topic
         if finished:

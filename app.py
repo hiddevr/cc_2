@@ -10,7 +10,7 @@ import json
 
 
 app = Flask(__name__)
-
+db = firestore.Client()
 
 def process_file_or_url(file_obj, url):
     filename = None
@@ -88,7 +88,6 @@ def check_progress():
         return render_template('progress.html')
     elif request.method == 'POST':
         video_id = str(request.form.get('video-id'))
-        db = firestore.Client()
         doc_ref = db.collection('jobs').document(video_id)
 
         if doc_ref:
