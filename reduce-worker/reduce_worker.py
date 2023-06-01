@@ -14,6 +14,7 @@ PROJECT_ID = 'cc-assigment2-388310'
 
 storage_client = storage.Client()
 
+
 @app.route('/', methods=['POST'])
 def index():
     # Parse Pub/Sub message
@@ -76,6 +77,9 @@ def index():
 
     # Remove the local video file
     os.remove(video_name)
+
+    doc_ref = db.collection('jobs').document(video_id)
+    doc_ref.update({'completed': True})
 
     return 'OK', 200
 
