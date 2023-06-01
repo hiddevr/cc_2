@@ -1,14 +1,33 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>Video Progress</title>
-    </head>
-    <body>
-        <h1>Check Video Processing Progress</h1>
-        <form method="POST" action="/progress">
-            <label for="video-id">Enter Video ID:</label><br>
-            <input type="text" id="video-id" name="video-id" required><br>
-            <input type="submit" value="Check Progress">
-        </form>
-    </body>
+<head>
+    <title>Video Progress</title>
+</head>
+<body>
+    <h1>Check Video Processing Progress</h1>
+    <form id="progress-form" onsubmit="event.preventDefault(); checkProgress();">
+        <label for="video-id">Enter Video ID:</label><br>
+        <input type="text" id="video-id" name="video-id" required><br>
+        <input type="submit" value="Check Progress">
+    </form>
+    <p id="progress-result"></p> <!-- Added a paragraph to display the result -->
+    <script>
+        function checkProgress() {
+            var videoId = document.getElementById('video-id').value;
+
+            fetch('/progress', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({'video-id': videoId})
+            }).then(response => response.text()) // convert response to text
+              .then((responseText) => {
+                document.getElementById('progress-result').innerText = responseText; // display the response
+            }).catch((error) => {
+                console.error('Error:', error);
+            });
+        }
+    </script>
+</body>
 </html>

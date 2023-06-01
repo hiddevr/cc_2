@@ -16,6 +16,8 @@
     <input type="button" value="Upload" onclick="uploadFiles()">
 </form>
 
+<p id="upload-result"></p> <!-- Added a paragraph to display the result -->
+
 <script>
     function uploadFiles() {
         var videoFile = document.getElementById('video-file').files[0];
@@ -32,8 +34,9 @@
         fetch('/upload', {
             method: 'POST',
             body: formData
-        }).then(response => {
-            console.log('Success:', response);
+        }).then(response => response.text()) // convert response to text
+          .then((responseText) => {
+            document.getElementById('upload-result').innerText = responseText; // display the response
         }).catch((error) => {
             console.error('Error:', error);
         });
