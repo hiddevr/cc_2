@@ -69,9 +69,13 @@ def index():
     # Add a document to Firestore
     db = firestore.Client()
     doc_ref = db.collection(u'jobs').document(video_id)
+
+    # Create dictionary with frame numbers as keys and False as values
+    processed_dict = {str(i): False for i in range(len(frames))}
+
     doc_ref.set({
         'frames': len(frames),
-        'processed': 0,
+        'processed': processed_dict,  # setting the 'processed' field to the dictionary
         'completed': False
     })
 
@@ -90,3 +94,4 @@ def index():
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
+

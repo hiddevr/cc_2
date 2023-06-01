@@ -18,16 +18,21 @@ storage_client = storage.Client()
 db = firestore.Client()
 
 
-@firestore.transactional
-def process_frame(transaction, doc_ref):
-    job = doc_ref.get(transaction=transaction)
-    transaction.update(doc_ref,  {
-        'processed': job.get('processed') + 1
+def process_frame(doc_ref, frame_number):
+    job = doc_ref.get()
+    processed_dict = job.get('processed')
+
+    # set the specific frame to True in the 'processed' dictionary
+    processed_dict[str(frame_number)] = True
+
+    # update the 'processed' field in the Firestore document
+    doc_ref.update({
+        'processed': processed_dict
     })
-    new_processed_count = job.get('processed')
-    if new_processed_count == job.get('frames'):
-        transaction.update(doc_ref, {
-            'completed': job.update({'completed': True})
+
+    if all(processed_dict.values()):
+        doc_ref.update({
+            'completed': True
         })
         return True
     else:
@@ -82,10 +87,9 @@ def index():
         # Upload BytesIO object to GCS
         output_blob.upload_from_file(byte_arr, content_type='image/png')
 
-        # Start the Firestore transaction
+        # Update Firestore
         doc_ref = db.collection('jobs').document(video_id)
-        transaction = db.transaction()
-        finished = process_frame(transaction, doc_ref)
+        finished = process_frame(doc_ref, frame_number)
 
         # If all frames are processed, publish a message to the 'reduce-video' topic
         if finished:
