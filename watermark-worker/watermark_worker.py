@@ -27,12 +27,12 @@ def process_frame(transaction, doc_ref, frame_number):
     processed_dict[str(frame_number)] = True
 
     # update the 'processed' field in the Firestore document
-    transaction.update(job, {
+    transaction.update(doc_ref, {
         'processed': processed_dict
     })
 
     if all(processed_dict.values()):
-        transaction.update(job, {
+        transaction.update(doc_ref, {
             'completed': True
         })
         return True
