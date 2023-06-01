@@ -91,7 +91,7 @@ def index():
         # Update Firestore
         doc_ref = db.collection('jobs').document(video_id)
         transaction = db.transaction
-        finished = process_frame(doc_ref, frame_number, transaction)
+        finished = process_frame(transaction, doc_ref, frame_number)
 
         # If all frames are processed, publish a message to the 'reduce-video' topic
         if finished:
