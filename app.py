@@ -91,15 +91,16 @@ def check_progress():
         doc_ref = db.collection('jobs').document(video_id)
 
         if doc_ref:
-            processed = doc_ref.get().to_dict().get('processed')
-            frames = doc_ref.get().to_dict().get('frames')
+            data = doc_ref.get().to_dict()
+            processed = data.get('processed')
+            frames = data.get('frames')
 
             # Calculate the percentage of processed frames
             processed_count = sum([1 for frame in processed.values() if frame])
             percent_processed = (processed_count / frames) * 100
 
             # If all frames are processed, provide a download link to the completed video
-            if doc_ref.get().to_dict().get('completed'):
+            if data.get('completed'):
                 link = f'https://storage.googleapis.com/completed-videos/{video_id}.mp4'
                 return f'{percent_processed}% processed. <a href="{link}">Download video</a>'
             else:

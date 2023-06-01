@@ -80,6 +80,7 @@ def index():
         transaction = db.transaction()
         process_frame(transaction, doc_ref, frame_number)
 
+        doc_ref = db.collection('jobs').document(video_id)
         processed_dict = doc_ref.get().to_dict().get('processed')
         if all(processed_dict.values()):
             transaction.update(doc_ref, {
