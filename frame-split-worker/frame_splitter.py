@@ -50,6 +50,7 @@ def index():
 
     # Open video file with OpenCV
     vidcap = cv2.VideoCapture(video_path)
+    fps = vidcap.get(cv2.CAP_PROP_FPS)  # Get the FPS of the video
     success, image_frame = vidcap.read()
     frames = []
     while success:
@@ -76,7 +77,8 @@ def index():
     doc_ref.set({
         'frames': len(frames),
         'processed': processed_dict,  # setting the 'processed' field to the dictionary
-        'completed': False
+        'completed': False,
+        'fps': fps
     })
 
     # Publish a message to a topic for each frame
