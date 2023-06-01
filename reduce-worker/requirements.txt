@@ -6,4 +6,4 @@ numpy
 gunicorn
 google-cloud-firestore
 google-cloud-pubsub
-PIL
+Pillow
