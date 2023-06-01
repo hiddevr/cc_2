@@ -13,21 +13,21 @@ app = Flask(__name__)
 
 
 def process_file_or_url(file_obj, url):
-    if file_obj is not None:
+    filename = None
+    if file_obj and file_obj.filename != '':
         # Save the file to a temporary file
         fd, filename = tempfile.mkstemp()
         with os.fdopen(fd, 'wb') as tmp:
             tmp.write(file_obj.read())
-    elif url is not None:
+    elif url and url.strip() != '':
         # Download the file from the URL to a temporary file
         response = requests.get(url, stream=True)
-        fd, filename = tempfile.mkstemp()
-        with os.fdopen(fd, 'wb') as tmp:
-            for chunk in response.iter_content(chunk_size=8192):
-                if chunk:
-                    tmp.write(chunk)
-    else:
-        filename = None
+        if response.status_code == 200:
+            fd, filename = tempfile.mkstemp()
+            with os.fdopen(fd, 'wb') as tmp:
+                for chunk in response.iter_content(chunk_size=8192):
+                    if chunk:
+                        tmp.write(chunk)
     return filename
 
 
