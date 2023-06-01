@@ -80,7 +80,8 @@ def index():
 
     doc_ref = db.collection('jobs').document(video_id)
     processed_dict = doc_ref.get().to_dict().get('processed')
-    if all(processed_dict.values()):
+    completed = doc_ref.get().to_dict().get('completed')
+    if all(processed_dict.values()) and not completed:
         doc_ref.update({'completed': True})
         finished = True
     else:

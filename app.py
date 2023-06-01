@@ -107,14 +107,8 @@ def check_progress():
                 storage_client = storage.Client()
                 bucket = storage_client.bucket('completed-videos')
                 blob = bucket.blob(f'{video_id}.mp4')
-                url = blob.generate_signed_url(
-                    version="v4",
-                    # This URL is valid for 15 minutes
-                    expiration=datetime.timedelta(minutes=15),
-                    # Allow GET requests using this URL.
-                    method="GET")
-
-                return f'{percent_processed}% processed. <a href="{url}">Download video</a>'
+                blob.make_public()
+                return f'{percent_processed}% processed. <a href="{blob.public_url}">Download video</a>'
             else:
                 return f'{percent_processed}% processed.'
         else:
