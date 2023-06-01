@@ -96,7 +96,8 @@ def index():
         # If all frames are processed, publish a message to the 'reduce-video' topic
         if finished:
             topic_path = publisher.topic_path(PROJECT_ID, 'reduce-video')
-            publisher.publish(topic_path, video_id.encode('utf-8'))
+            message = json.dumps({'video_id': video_id}).encode('utf-8')
+            publisher.publish(topic_path, data=message)
 
     return 'OK', 200
 
