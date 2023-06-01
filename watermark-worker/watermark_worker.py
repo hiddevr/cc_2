@@ -83,9 +83,7 @@ def index():
         doc_ref = db.collection('jobs').document(video_id)
         processed_dict = doc_ref.get().to_dict().get('processed')
         if all(processed_dict.values()):
-            transaction.update(doc_ref, {
-                'completed': True
-            })
+            doc_ref.set({'completed': True})
             finished = True
         else:
             finished = False

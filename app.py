@@ -91,6 +91,8 @@ def check_progress():
         doc_ref = db.collection('jobs').document(video_id)
 
         doc = doc_ref.get()
+        return video_id
+        """
         if doc.exists:
             data = doc.to_dict()
             processed = data.get('processed')
@@ -108,6 +110,7 @@ def check_progress():
                 return f'{percent_processed}% processed.'
         else:
             return 'Video ID not found.', 404
+        """
 
 
 if __name__ == "__main__":
