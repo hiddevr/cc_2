@@ -31,7 +31,7 @@ def process_file_or_url(file_obj, url):
     return filename
 
 
-@app.route('/upload', methods=['GET', 'POST'])
+@app.route('/', methods=['GET', 'POST'])
 def upload_files():
     if request.method == 'GET':
         return render_template('upload.html')
@@ -79,7 +79,38 @@ def upload_files():
         # Non-blocking. Allow the publish() method to complete in the background.
         future.result()
 
-        return 'Done'
+        return f'Video ID: {user_id}'  # Return the video_id to the user
+
+
+@app.route('/progress', methods=['GET', 'POST'])
+def check_progress():
+    if request.method == 'GET':
+        return render_template('progress.html')
+    elif request.method == 'POST':
+        video_id = request.form.get('video-id')
+
+        db = firestore.Client()
+        doc_ref = db.collection('jobs').document(video_id)
+
+        doc = doc_ref.get()
+        if doc.exists:
+            data = doc.to_dict()
+            frames = data.get('frames')
+            processed = data.get('processed')
+
+            # Calculate the percentage of processed frames
+            processed_count = sum([1 for frame in processed.values() if frame])
+            percent_processed = (processed_count / frames) * 100
+
+            # If all frames are processed, provide a download link to the completed video
+            if data.get('completed'):
+                link = f'https://storage.googleapis.com/completed-videos/{video_id}.mp4'
+                return f'{percent_processed}% processed. <a href="{link}">Download video</a>'
+            else:
+                return f'{percent_processed}% processed.'
+        else:
+            return 'Video ID not found.', 404
+
 
 
 if __name__ == "__main__":
