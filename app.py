@@ -88,13 +88,14 @@ def check_progress():
         return render_template('progress.html')
     elif request.method == 'POST':
         video_id = request.form.get('video-id')
-
+        print(video_id)
         db = firestore.Client()
         doc_ref = db.collection('jobs').document(video_id)
 
         doc = doc_ref.get()
         if doc.exists:
             data = doc.to_dict()
+            print(data)
             frames = data.get('frames')
             processed = data.get('processed')
 
