@@ -19,7 +19,7 @@ db = firestore.Client()
 
 
 @firestore.transactional
-def process_frame(doc_ref, frame_number, transaction):
+def process_frame(transaction, doc_ref, frame_number):
     job = doc_ref.get(transaction=transaction)
     processed_dict = job.get('processed')
 
