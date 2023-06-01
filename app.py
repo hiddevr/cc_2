@@ -90,8 +90,9 @@ def check_progress():
         video_id = str(request.form.get('video-id'))
         doc_ref = db.collection('jobs').document(video_id)
 
-        if doc_ref:
-            data = doc_ref.get().to_dict()
+        doc = doc_ref.get()
+        if doc.exists:
+            data = doc.to_dict()
             processed = data.get('processed')
             frames = data.get('frames')
 
