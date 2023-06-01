@@ -93,7 +93,7 @@ def check_progress():
         doc_ref = db.collection('jobs').document(video_id)
 
         doc = doc_ref.get()
-        if doc.exists:
+        if doc:
             data = doc.to_dict()
             print(data)
             frames = data.get('frames')
