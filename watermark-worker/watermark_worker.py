@@ -63,36 +63,34 @@ def index():
     output_bucket = storage_client.get_bucket('processed-frames')
     output_blob = output_bucket.blob(f'{video_id}/frame{frame_number}.png')
 
-    if not output_blob.exists():
-        # Add watermark to frame
-        frame.paste(watermark, (0, 0), watermark)
+    frame.paste(watermark, (0, 0), watermark)
 
-        # Save image to BytesIO object
-        byte_arr = io.BytesIO()
-        frame.save(byte_arr, format='PNG')
-        byte_arr.seek(0) # reset the pointer to the start of BytesIO object
+    # Save image to BytesIO object
+    byte_arr = io.BytesIO()
+    frame.save(byte_arr, format='PNG')
+    byte_arr.seek(0) # reset the pointer to the start of BytesIO object
 
-        # Upload BytesIO object to GCS
-        output_blob.upload_from_file(byte_arr, content_type='image/png')
+    # Upload BytesIO object to GCS
+    output_blob.upload_from_file(byte_arr, content_type='image/png')
 
-        # Update Firestore
-        doc_ref = db.collection('jobs').document(video_id)
-        transaction = db.transaction()
-        process_frame(transaction, doc_ref, frame_number)
+    # Update Firestore
+    doc_ref = db.collection('jobs').document(video_id)
+    transaction = db.transaction()
+    process_frame(transaction, doc_ref, frame_number)
 
-        doc_ref = db.collection('jobs').document(video_id)
-        processed_dict = doc_ref.get().to_dict().get('processed')
-        if all(processed_dict.values()):
-            doc_ref.update({'completed': True})
-            finished = True
-        else:
-            finished = False
+    doc_ref = db.collection('jobs').document(video_id)
+    processed_dict = doc_ref.get().to_dict().get('processed')
+    if all(processed_dict.values()):
+        doc_ref.update({'completed': True})
+        finished = True
+    else:
+        finished = False
 
-        # If all frames are processed, publish a message to the 'reduce-video' topic
-        if finished:
-            topic_path = publisher.topic_path(PROJECT_ID, 'reduce-video')
-            message = json.dumps({'video_id': video_id}).encode('utf-8')
-            publisher.publish(topic_path, data=message)
+    # If all frames are processed, publish a message to the 'reduce-video' topic
+    if finished:
+        topic_path = publisher.topic_path(PROJECT_ID, 'reduce-video')
+        message = json.dumps({'video_id': video_id}).encode('utf-8')
+        publisher.publish(topic_path, data=message)
 
     return 'OK', 200
 
