@@ -20,11 +20,11 @@ db = firestore.Client()
 
 @firestore.transactional
 def process_frame(transaction, doc_ref, frame_number):
-    job = doc_ref.get(transaction=transaction)
     transaction.update(doc_ref, {
         f'processed.{frame_number}': True
     })
-    processed_dict = job.get('processed')
+
+    processed_dict = doc_ref.get().to_dict().get('processed')
     if all(processed_dict.values()):
         transaction.update(doc_ref, {
             'completed': True

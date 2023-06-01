@@ -87,21 +87,20 @@ def check_progress():
     if request.method == 'GET':
         return render_template('progress.html')
     elif request.method == 'POST':
-        video_id = request.form.get('video-id')
+        video_id = str(request.form.get('video-id'))
         db = firestore.Client()
         doc_ref = db.collection('jobs').document(video_id)
 
         if doc_ref:
-            data = doc_ref.get().to_dict()
-            frames = data.get('frames')
-            processed = data.get('processed')
+            processed = doc_ref.get().to_dict().get('processed')
+            frames = doc_ref.get().to_dict().get('frames')
 
             # Calculate the percentage of processed frames
             processed_count = sum([1 for frame in processed.values() if frame])
             percent_processed = (processed_count / frames) * 100
 
             # If all frames are processed, provide a download link to the completed video
-            if data.get('completed'):
+            if doc_ref.get().to_dict().get('completed'):
                 link = f'https://storage.googleapis.com/completed-videos/{video_id}.mp4'
                 return f'{percent_processed}% processed. <a href="{link}">Download video</a>'
             else:
