@@ -27,6 +27,11 @@ def process_frame(transaction, doc_ref, frame_number):
     return
 
 
+@app.route('/', methods=['GET'])
+def health_check():
+    return 'OK', 200
+
+
 @app.route('/', methods=['POST'])
 def index():
     # Parse Pub/Sub message
