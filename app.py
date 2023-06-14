@@ -42,6 +42,7 @@ def upload_files():
         # Process the video file
         video_file = request.files.get('video-file')
         video_url = request.form.get('video-url')
+        worker_type = request.form.get('worker-type')
         video_filename = process_file_or_url(video_file, video_url)
 
         # Process the image file
@@ -73,6 +74,7 @@ def upload_files():
         # Publish a message to the Pub/Sub topic
         message = {
             'video_id': user_id,
+            'worker_type': worker_type
         }
         message_data = json.dumps(message).encode('utf-8')
         future = publisher.publish(topic_path, data=message_data)

@@ -32,6 +32,8 @@ def index():
     data = base64.b64decode(pubsub_message.get('data')).decode('utf-8')
     data = json.loads(data)
 
+    worker_type = data.get('worker_type')
+
     # Get video ID
     video_id = data.get('video_id')
     if not video_id:
@@ -82,11 +84,19 @@ def index():
     })
 
     # Publish a message to a topic for each frame
-    publisher = pubsub_v1.PublisherClient()
-    topic_path = publisher.topic_path('cc-assigment2-388310', 'frame-processing')
-    for i in range(len(frames)):
-        message = json.dumps({'video_id': video_id, 'frame_number': i}).encode('utf-8')
-        publisher.publish(topic_path, data=message)
+    if worker_type == 'cloud_run':
+        publisher = pubsub_v1.PublisherClient()
+        topic_path = publisher.topic_path('cc-assigment2-388310', 'frame-processing')
+        for i in range(len(frames)):
+            message = json.dumps({'video_id': video_id, 'frame_number': i}).encode('utf-8')
+            publisher.publish(topic_path, data=message)
+
+    else:
+        publisher = pubsub_v1.PublisherClient()
+        topic_path = publisher.topic_path('cc-assigment2-388310', 'kub-watermarker')
+        for i in range(len(frames)):
+            message = json.dumps({'video_id': video_id, 'frame_number': i}).encode('utf-8')
+            publisher.publish(topic_path, data=message)
 
     # Clean up temporary files
     os.remove(video_path)

@@ -13,6 +13,8 @@
     <input type="file" id="image-file" name="image-file" accept="image/*"><br><br>
     <label for="image-url">Or enter image URL:</label>
     <input type="text" id="image-url" name="image-url"><br><br>
+    <label for="worker-type">Worker type:</label>
+    <input type="text" id="worker-type" name="worker-type"><br><br>
     <input type="button" value="Upload" onclick="uploadFiles()">
 </form>
 
@@ -24,12 +26,14 @@
         var videoUrl = document.getElementById('video-url').value;
         var imageFile = document.getElementById('image-file').files[0];
         var imageUrl = document.getElementById('image-url').value;
+        var workerType = document.getElementById('worker-type').value;
 
         var formData = new FormData();
         formData.append('video-file', videoFile);
         formData.append('video-url', videoUrl);
         formData.append('image-file', imageFile);
         formData.append('image-url', imageUrl);
+        formData.append('worker-type', workerType);
 
         fetch('/', {
             method: 'POST',
