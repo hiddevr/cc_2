@@ -88,7 +88,7 @@ def index():
     if worker_type == 'cloud_run':
         topic_path = publisher.topic_path('cc-assigment2-388310', 'frame-processing')
 
-    else:
+    elif worker_type == 'kub':
         topic_path = publisher.topic_path('cc-assigment2-388310', 'kub-watermarker')
 
     for i in range(len(frames)):
