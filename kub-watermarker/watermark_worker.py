@@ -7,6 +7,7 @@ from PIL import Image
 import io
 from google.cloud import storage, pubsub_v1, firestore
 import time
+import traceback
 
 PROJECT_ID = 'cc-assigment2-388310'
 
@@ -89,5 +90,6 @@ if __name__ == "__main__":
         future.cancel()
     except Exception as e:
         # Log or print the exception
+        traceback.print_exc()
         print(f"An exception occurred: {e}")
         future.cancel()
