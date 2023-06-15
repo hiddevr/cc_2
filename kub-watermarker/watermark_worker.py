@@ -7,6 +7,7 @@ from PIL import Image
 import io
 from google.cloud import storage, pubsub_v1, firestore
 import time
+from concurrent.futures import TimeoutError
 
 PROJECT_ID = 'cc-assigment2-388310'
 
@@ -16,13 +17,11 @@ storage_client = storage.Client()
 db = firestore.Client()
 publisher = pubsub_v1.PublisherClient()
 
-
 @firestore.transactional
 def process_frame(transaction, doc_ref, frame_number):
     transaction.update(doc_ref, {
         f'processed.{frame_number}': True
     })
-
 
 def process_message(message):
     # Decode the Pub/Sub message
@@ -70,21 +69,15 @@ def process_message(message):
     # If all frames are processed, publish a message to the 'reduce-video' topic
     if finished:
         topic_path = publisher.topic_path(PROJECT_ID, 'reduce-video')
-        message = json.dumps({'video_id': video_id}).encode('utf-8')
-        publisher.publish(topic_path, data=message)
+        message_json = json.dumps({'video_id': video_id}).encode('utf-8')
+        publisher.publish(topic_path, data=message_json)
 
     message.ack()
 
-
 def pull_messages():
+    subscriber.subscribe(subscription_path, callback=process_message)
     while True:
-        response = subscriber.pull(subscription_path, max_messages=10, return_immediately=False)
-        if response.received_messages:
-            for received_message in response.received_messages:
-                process_message(received_message.message)
-        else:
-            time.sleep(5)
-
+        time.sleep(60)
 
 if __name__ == "__main__":
     pull_messages()
