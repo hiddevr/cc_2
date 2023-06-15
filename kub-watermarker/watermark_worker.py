@@ -7,7 +7,6 @@ from PIL import Image
 import io
 from google.cloud import storage, pubsub_v1, firestore
 import time
-from concurrent.futures import TimeoutError
 
 PROJECT_ID = 'cc-assigment2-388310'
 
@@ -23,7 +22,7 @@ def process_frame(transaction, doc_ref, frame_number):
         f'processed.{frame_number}': True
     })
 
-def process_message(message):
+def callback(message):
     # Decode the Pub/Sub message
     data = base64.b64decode(message.data).decode('utf-8')
     data = json.loads(data)
@@ -74,10 +73,17 @@ def process_message(message):
 
     message.ack()
 
-def pull_messages():
-    subscriber.subscribe(subscription_path, callback=process_message)
-    while True:
-        time.sleep(60)
-
 if __name__ == "__main__":
-    pull_messages()
+    # Subscribe to the subscription
+    future = subscriber.subscribe(subscription_path, callback=callback)
+
+    try:
+        # Keep the main thread alive to keep consuming messages
+        future.result()
+    except KeyboardInterrupt:
+        # Handling keyboard interrupt to cleanly shutdown the subscriber
+        future.cancel()
+    except Exception as e:
+        # Log or print the exception
+        print(f"An exception occurred: {e}")
+        future.cancel()
