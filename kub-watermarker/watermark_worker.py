@@ -17,17 +17,18 @@ storage_client = storage.Client()
 db = firestore.Client()
 publisher = pubsub_v1.PublisherClient()
 
+
 @firestore.transactional
 def process_frame(transaction, doc_ref, frame_number):
     transaction.update(doc_ref, {
         f'processed.{frame_number}': True
     })
 
+
 def callback(message):
     # Decode the Pub/Sub message
     try:
-        data = base64.b64decode(message.data).decode('utf-8')
-        data = json.loads(data)
+        data = message.data
         video_id = data['video_id']
         frame_number = data['frame_number']
 
