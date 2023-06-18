@@ -88,6 +88,7 @@ def index():
     completed = doc_ref.get().to_dict().get('completed')
     if all(processed_dict.values()) and not completed:
         finished = True
+        doc_ref.update({'completed': True})
     else:
         finished = False
 
