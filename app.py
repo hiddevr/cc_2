@@ -105,7 +105,7 @@ def check_progress():
             percent_processed = (processed_count / frames) * 100
 
             # If all frames are processed, provide a download link to the completed video
-            if data.get('completed'):
+            if data.get('watermarked'):
                 storage_client = storage.Client()
                 bucket = storage_client.bucket('completed-videos')
                 blob = bucket.blob(f'{video_id}.mp4')

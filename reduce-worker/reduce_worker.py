@@ -79,7 +79,7 @@ def index():
     os.remove(video_name)
 
     doc_ref = db.collection('jobs').document(video_id)
-    doc_ref.update({'completed': True})
+    doc_ref.update({'watermarked': True})
 
     return 'OK', 200
 
