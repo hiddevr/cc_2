@@ -12,7 +12,7 @@ import os
 #Information
 base_url = 'https://serve-frontend-cz4emo5pia-ew.a.run.app/'
 project_id = "cc-assigment2-388310"
-os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'C:\\Users\\stane\\Downloads\\Master\\Cloud Computing\\Assignment 2\\cc_2\\keys\\cc-assigment2-388310-5ed5f427886b.json'
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'C:\\Users\\stane\\Downloads\\Master\\Cloud Computing\\Assignment 2\\cc_2\\keys\\cc-assigment2-388310-222a6c410a30.json'
 
 
 #Fill in
@@ -20,27 +20,28 @@ video_url = 'https://storage.googleapis.com/cc-test-data/small.mp4'
 image_url = 'https://storage.googleapis.com/cc-test-data/watermark.png'
 worker_type = 'cloud_run'
 
-#Use web app
-response = requests.post(f'{base_url}', data={'video-url': video_url, 'image-url': image_url, 'worker-type': worker_type})
-response.raise_for_status()
-
-pattern = r":\s*([^:\s]+)"
-match = re.search(pattern, response.text)
-video_id = match.group(1)
-
-progress_url = f'{base_url}progress'
-
-#Metrics for cloud_run
-credentials, project_id = load_credentials_from_file(os.environ.get("GOOGLE_APPLICATION_CREDENTIALS"))
-client = monitoring_v3.MetricServiceClient()
-project_name = f"projects/{project_id}"
-
-#Wait for video to get rendered
-time.sleep(20)
-
-
 for i in range(2):
     start_time = datetime.datetime.now()
+
+    # Use web app
+    response = requests.post(f'{base_url}',
+                             data={'video-url': video_url, 'image-url': image_url, 'worker-type': worker_type})
+    response.raise_for_status()
+
+    pattern = r":\s*([^:\s]+)"
+    match = re.search(pattern, response.text)
+    video_id = match.group(1)
+
+    progress_url = f'{base_url}progress'
+
+    # Metrics for cloud_run
+    credentials, project_id = load_credentials_from_file(os.environ.get("GOOGLE_APPLICATION_CREDENTIALS"))
+    client = monitoring_v3.MetricServiceClient()
+    project_name = f"projects/{project_id}"
+
+    # Wait for video to get rendered
+    time.sleep(20)
+
     while True:
         # Send request to check progress
         response = requests.post(
@@ -65,10 +66,6 @@ for i in range(2):
             duration = end_time - start_time
             minutes = duration.total_seconds() / 60
 
-            print("Minutes:", minutes)
-
-            print("seconds:", duration.total_seconds())
-
             cpu_results = google.cloud.monitoring_v3.query.Query(
                 client=client,
                 project=project_id,
@@ -77,11 +74,10 @@ for i in range(2):
                 minutes=minutes
             )
 
-            cpu_results = cpu_results.select_metrics(instance_name="watermarker-worker")
+            # cpu_results = cpu_results.select_metrics(revision_name="watermarker-worker-00057-bes")
 
             # Print the metrics
-            for result in cpu_results:
-                print("Cpu result:", result)
+            print(cpu_results)
 
             break
 
